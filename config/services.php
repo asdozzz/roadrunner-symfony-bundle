@@ -5,6 +5,7 @@ namespace Symfony\Component\DependencyInjection\Loader\Configurator;
 use FluffyDiscord\RoadRunnerBundle\Factory\RPCFactory;
 use FluffyDiscord\RoadRunnerBundle\Worker\CentrifugoWorker;
 use FluffyDiscord\RoadRunnerBundle\Worker\HttpWorker as BundleHttpWorker;
+use FluffyDiscord\RoadRunnerBundle\Worker\JobsWorker;
 use FluffyDiscord\RoadRunnerBundle\Worker\WorkerRegistry;
 use RoadRunner\Centrifugo\CentrifugoWorker as RoadRunnerCentrifugoWorker;
 use RoadRunner\Centrifugo\CentrifugoWorkerInterface;
@@ -122,6 +123,22 @@ return static function (ContainerConfigurator $container) {
             ->call("registerWorker", [
                 Environment\Mode::MODE_CENTRIFUGE,
                 service(CentrifugoWorker::class),
+            ])
+        ;
+    }
+
+    if (class_exists(Spiral\RoadRunner\Jobs\Consumer::class)) {
+        $services->set(JobsWorker::class)
+            ->public()
+            ->args([
+                service(KernelInterface::class),
+            ]);
+
+        $services
+            ->get(WorkerRegistry::class)
+            ->call("registerWorker", [
+                Environment\Mode::MODE_JOBS,
+                service(JobsWorker::class),
             ])
         ;
     }
