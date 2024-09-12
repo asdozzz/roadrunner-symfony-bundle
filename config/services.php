@@ -127,6 +127,10 @@ return static function (ContainerConfigurator $container) {
         ;
     }
 
+    $services
+        ->set(JobsWorker\JobsHandleRegistry::class)
+        ->public();
+
     $services->set(JobsWorker::class)
         ->public()
         ->args([
