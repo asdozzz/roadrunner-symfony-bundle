@@ -21,6 +21,7 @@ final class JobsHandleRegistry
         foreach ($this->handlers as $handler) {
             if ($handler->isSupportedQueue($queueName)) {
                 $result = $handler;
+                break;
             }
         }
 

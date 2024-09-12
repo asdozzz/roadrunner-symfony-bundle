@@ -25,10 +25,10 @@ final class JobsWorker implements WorkerInterface
                 $handler = $this->handleRegistry->findHandlerByQueueName($task->getQueueName());
 
                 if (empty($handler)) {
-                    throw new \Exception(sprintf('Handler for queue - %s not found', $task->getQueueName()));
+                    var_dump(sprintf('Handler for queue - %s not found', $task->getQueueName()));
+                } else {
+                    $handler->handle($task);
                 }
-
-                $handler->handle($task);
 
                 $task->ack();
             } catch (\Throwable $e) {
