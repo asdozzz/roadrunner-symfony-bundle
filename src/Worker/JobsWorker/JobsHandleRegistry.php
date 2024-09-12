@@ -1,7 +1,6 @@
 <?php
 
 namespace FluffyDiscord\RoadRunnerBundle\Worker\JobsWorker;
-use Symfony\Component\DependencyInjection\Attribute\TaggedIterator;
 
 final class JobsHandleRegistry
 {
@@ -10,7 +9,7 @@ final class JobsHandleRegistry
      * */
     private iterable $handlers;
 
-    public function __construct(#[TaggedIterator('roadrunner_jobs.handler')] iterable $handlers)
+    public function __construct(iterable $handlers)
     {
         $this->handlers = $handlers;
     }

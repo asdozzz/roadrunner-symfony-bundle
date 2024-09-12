@@ -128,7 +128,12 @@ return static function (ContainerConfigurator $container) {
     }
 
     $services
+        ->instanceof(JobsWorker\JobsHandlerInterface::class)
+        ->tag('roadrunner_jobs.handler');
+
+    $services
         ->set(JobsWorker\JobsHandleRegistry::class)
+        ->args([tagged_iterator('roadrunner_jobs.handler')])
         ->public();
 
     $services->set(JobsWorker::class)
