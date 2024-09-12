@@ -127,17 +127,19 @@ return static function (ContainerConfigurator $container) {
         ;
     }
 
-    $services->set(JobsWorker::class)
-        ->public()
-        ->args([
-            service(KernelInterface::class),
-        ]);
+    if (class_exists(Spiral\RoadRunner\Jobs\Consumer::class)) {
+        $services->set(JobsWorker::class)
+            ->public()
+            ->args([
+                service(JobsWorker\JobsHandleRegistry::class),
+            ]);
 
-    $services
-        ->get(WorkerRegistry::class)
-        ->call("registerWorker", [
-            Environment\Mode::MODE_JOBS,
-            service(JobsWorker::class),
-        ])
-    ;
+        $services
+            ->get(WorkerRegistry::class)
+            ->call("registerWorker", [
+                Environment\Mode::MODE_JOBS,
+                service(JobsWorker::class),
+            ])
+        ;
+    }
 };
