@@ -25,7 +25,7 @@ readonly class Runner implements RunnerInterface
         $worker = $registry->getWorker($this->mode);
 
         if (null === $worker) {
-            error_log(sprintf('Missing RR worker implementation for %s mode', $this->mode));
+            error_log(sprintf('Missing RR worker implementation for %s mode %s', $this->mode, json_encode($registry->getWorkers())));
 
             return 1;
         }

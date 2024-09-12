@@ -9,21 +9,15 @@ use Spiral\RoadRunner\Jobs\Task\ReceivedTaskInterface;
 
 final class JobsWorker implements WorkerInterface
 {
-    public function __construct(private KernelInterface $kernel) {
-
-    }
     public function start(): void
     {
-        $this->kernel->boot();
-        $container = $this->kernel->getContainer();
         $consumer = new Consumer();
         $shouldBeRestarted = false;
-        $logger = $container->get(LoggerInterface::class);
 
         /** @var ReceivedTaskInterface $task */
         while ($task = $consumer->waitTask()) {
             try {
-                $logger->info(sprintf('Starting job %d %s', $task->getId(), $task->getName()));
+                var_dump($task);
                 $task->ack();
             } catch (\Throwable $e) {
                 $task->nack($e, $shouldBeRestarted);

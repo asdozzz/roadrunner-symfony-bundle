@@ -15,4 +15,9 @@ class WorkerRegistry
     {
         return $this->workers[$mode] ?? null;
     }
+
+    public function getWorkers(): array
+    {
+        return array_map(fn (WorkerInterface $worker) => $worker::class, $this->workers);
+    }
 }
