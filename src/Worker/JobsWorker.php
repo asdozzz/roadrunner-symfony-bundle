@@ -23,7 +23,7 @@ final class JobsWorker implements WorkerInterface
         while ($task = $consumer->waitTask()) {
             try {
                 $handler = $this->handleRegistry->findHandlerByQueueName($task->getQueueName());
-
+                var_dump($handler);
                 if (empty($handler)) {
                     var_dump(sprintf('Handler for queue - %s not found', $task->getQueueName()));
                 } else {
