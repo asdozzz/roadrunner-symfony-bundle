@@ -31,6 +31,11 @@ class Configuration implements ConfigurationInterface
                         ->booleanNode("lazy_boot")->defaultFalse()->end()
                     ->end()
                 ->end()
+                ->arrayNode("jobs")
+                    ->children()
+                        ->booleanNode("lazy_boot")->defaultFalse()->end()
+                    ->end()
+                ->end()
             ->end()
         ;
 

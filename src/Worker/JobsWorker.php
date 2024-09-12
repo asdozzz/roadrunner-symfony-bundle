@@ -2,7 +2,6 @@
 
 namespace FluffyDiscord\RoadRunnerBundle\Worker;
 
-use FluffyDiscord\RoadRunnerBundle\Worker\WorkerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpKernel\KernelInterface;
 use Spiral\RoadRunner\Jobs\Consumer;
