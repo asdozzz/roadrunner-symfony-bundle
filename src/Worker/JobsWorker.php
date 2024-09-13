@@ -26,7 +26,7 @@ final class JobsWorker implements WorkerInterface
                 $handleRegistry = $this->kernel->getContainer()->get(JobsHandleRegistry::class);
                 /** @var JobsHandleRegistry $handleRegistry*/
                 var_dump($task);
-                $queueName = $task->getQueue();
+                $queueName = $task->getPipeline();
                 $handler = $handleRegistry->findHandlerByQueueName($queueName);
 
                 if (empty($handler)) {
