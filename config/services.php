@@ -139,7 +139,7 @@ return static function (ContainerConfigurator $container) {
     $services->set(JobsWorker::class)
         ->public()
         ->args([
-            service(JobsWorker\JobsHandleRegistry::class),
+            service(KernelInterface::class)
         ]);
 
     $services

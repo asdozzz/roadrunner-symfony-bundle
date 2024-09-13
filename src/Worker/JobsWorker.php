@@ -10,8 +10,8 @@ use Spiral\RoadRunner\Jobs\Task\ReceivedTaskInterface;
 
 final class JobsWorker implements WorkerInterface
 {
-    public function __construct(private JobsHandleRegistry $handleRegistry)
-    {
+    public function __construct(private KernelInterface $kernel) {
+
     }
 
     public function start(): void
@@ -22,8 +22,12 @@ final class JobsWorker implements WorkerInterface
         /** @var ReceivedTaskInterface $task */
         while ($task = $consumer->waitTask()) {
             try {
-                $handler = $this->handleRegistry->findHandlerByQueueName($task->getQueueName());
-                var_dump($handler);
+                $this->kernel->boot();
+                $handleRegistry = $this->kernel->getContainer()->get(JobsHandleRegistry::class);
+                /** @var JobsHandleRegistry $handleRegistry*/
+                var_dump($handleRegistry);
+                $handler = $handleRegistry->findHandlerByQueueName($task->getQueueName());
+
                 if (empty($handler)) {
                     var_dump(sprintf('Handler for queue - %s not found', $task->getQueueName()));
                 } else {
