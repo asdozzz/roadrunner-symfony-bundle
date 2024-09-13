@@ -26,11 +26,10 @@ final class JobsWorker implements WorkerInterface
         /** @var ReceivedTaskInterface $task */
         while ($task = $consumer->waitTask()) {
             try {
-                $queueName = $task->getPipeline();
-                $handler = $handleRegistry->findHandlerByQueueName($queueName);
+                $handler = $handleRegistry->findHandlerByTask($task);
 
                 if (empty($handler)) {
-                    var_dump(sprintf('Handler for queue - %s not found', $queueName));
+                    var_dump(sprintf('Handler for pipeline not found - %s, %s', $task->getPipeline(), $task->getQueue()));
                 } else {
                     $handler->handle($task);
                 }

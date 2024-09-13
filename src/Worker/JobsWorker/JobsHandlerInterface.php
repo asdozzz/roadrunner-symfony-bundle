@@ -7,7 +7,7 @@ use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 
 interface JobsHandlerInterface
 {
-    public function isSupportedQueue(string $queueName): bool;
+    public function isSupported(ReceivedTaskInterface $task): bool;
 
     public function handle(ReceivedTaskInterface $task): void;
 }

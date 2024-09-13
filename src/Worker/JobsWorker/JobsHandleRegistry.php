@@ -1,6 +1,7 @@
 <?php
 
 namespace FluffyDiscord\RoadRunnerBundle\Worker\JobsWorker;
+use Spiral\RoadRunner\Jobs\Task\ReceivedTaskInterface;
 
 final class JobsHandleRegistry
 {
@@ -14,12 +15,12 @@ final class JobsHandleRegistry
         $this->handlers = $handlers;
     }
 
-    public function findHandlerByQueueName(string $queueName): ?JobsHandlerInterface
+    public function findHandlerByTask(ReceivedTaskInterface $task): ?JobsHandlerInterface
     {
         $result = null;
 
         foreach ($this->handlers as $handler) {
-            if ($handler->isSupportedQueue($queueName)) {
+            if ($handler->isSupported($task)) {
                 $result = $handler;
                 break;
             }
