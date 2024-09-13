@@ -19,20 +19,19 @@ final class JobsWorker implements WorkerInterface
         $consumer = new Consumer();
         $shouldBeRestarted = false;
 
+        $this->kernel->boot();
+        $handleRegistry = $this->kernel->getContainer()->get(JobsHandleRegistry::class);
+        /** @var JobsHandleRegistry $handleRegistry*/
+
         /** @var ReceivedTaskInterface $task */
         while ($task = $consumer->waitTask()) {
             try {
-                $this->kernel->boot();
-                $handleRegistry = $this->kernel->getContainer()->get(JobsHandleRegistry::class);
-                /** @var JobsHandleRegistry $handleRegistry*/
-
                 $queueName = $task->getPipeline();
                 $handler = $handleRegistry->findHandlerByQueueName($queueName);
 
                 if (empty($handler)) {
                     var_dump(sprintf('Handler for queue - %s not found', $queueName));
                 } else {
-                    var_dump(sprintf('Handler: %s', $handler::class));
                     $handler->handle($task);
                 }
 
