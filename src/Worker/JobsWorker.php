@@ -36,6 +36,7 @@ final class JobsWorker implements WorkerInterface
 
                 $task->ack();
             } catch (\Throwable $e) {
+                var_dump(sprintf('Error queue %s', $e->getMessage()));
                 $task->nack($e, $shouldBeRestarted);
             }
         }
