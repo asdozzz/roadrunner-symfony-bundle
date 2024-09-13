@@ -32,6 +32,7 @@ final class JobsWorker implements WorkerInterface
                 if (empty($handler)) {
                     var_dump(sprintf('Handler for queue - %s not found', $queueName));
                 } else {
+                    var_dump(sprintf('Handler: %s', $handler::class));
                     $handler->handle($task);
                 }
 
