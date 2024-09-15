@@ -17,7 +17,6 @@ final class JobsWorker implements WorkerInterface
     public function start(): void
     {
         $consumer = new Consumer();
-        $shouldBeRestarted = false;
 
         $this->kernel->boot();
         $handleRegistry = $this->kernel->getContainer()->get(JobsHandleRegistry::class);
@@ -38,7 +37,14 @@ final class JobsWorker implements WorkerInterface
                 $task->ack();
             } catch (\Throwable $e) {
                 var_dump(sprintf('Error queue %s', $e->getMessage()));
-                $task->nack($e, $shouldBeRestarted);
+                $attempt = (int)$task->getHeaderLine('attempts') - 1;
+                $delay = (int)$task->getHeaderLine('retry-delay') * 2;
+
+                if (!empty($attempt) && $attempt > 0) {
+                    $task->withDelay($delay)->requeue($e);
+                } else {
+                    $task->nack($e, false);
+                }
             }
         }
     }
