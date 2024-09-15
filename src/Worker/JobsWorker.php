@@ -41,7 +41,7 @@ final class JobsWorker implements WorkerInterface
                 $delay = (int)$task->getHeaderLine('retry-delay') * 2;
 
                 if (!empty($attempt) && $attempt > 0) {
-                    $task->withDelay($delay)->requeue($e);
+                    $task->withHeader('attempts', $attempt)->withHeader('retry-delay', $delay)->withDelay($delay)->requeue($e);
                 } else {
                     $task->nack($e, false);
                 }
