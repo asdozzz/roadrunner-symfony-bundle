@@ -37,7 +37,7 @@ final class JobsWorker implements WorkerInterface
             } catch (\Throwable $e) {
                 var_dump(sprintf('Error queue %s', $e->getMessage()));
                 $attempt = (int)$task->getHeaderLine('attempts') - 1;
-                $delay = (int)$task->getHeaderLine('retry-delay') * 2;
+                $delay = (int)$task->getHeaderLine('retry-delay');
 
                 if (!empty($attempt) && $attempt > 0) {
                     $task->withHeader('attempts', $attempt)->withHeader('retry-delay', $delay)->withDelay($delay)->requeue($e);
