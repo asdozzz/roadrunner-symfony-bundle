@@ -18,13 +18,12 @@ final class JobsWorker implements WorkerInterface
     {
         $consumer = new Consumer();
 
-        $this->kernel->boot();
-        $handleRegistry = $this->kernel->getContainer()->get(JobsHandleRegistry::class);
-        /** @var JobsHandleRegistry $handleRegistry*/
-
         /** @var ReceivedTaskInterface $task */
         while ($task = $consumer->waitTask()) {
             try {
+                $this->kernel->boot();
+                $handleRegistry = $this->kernel->getContainer()->get(JobsHandleRegistry::class);
+                /** @var JobsHandleRegistry $handleRegistry*/
                 $handler = $handleRegistry->findHandlerByTask($task);
 
                 if (empty($handler)) {
