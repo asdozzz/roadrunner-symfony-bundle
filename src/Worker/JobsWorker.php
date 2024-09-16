@@ -3,6 +3,7 @@
 namespace FluffyDiscord\RoadRunnerBundle\Worker;
 
 use FluffyDiscord\RoadRunnerBundle\Worker\JobsWorker\JobsHandleRegistry;
+use FluffyDiscord\RoadRunnerBundle\Worker\JobsWorker\JobsHandlerInterface;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpKernel\KernelInterface;
 use Spiral\RoadRunner\Jobs\Consumer;
@@ -36,11 +37,11 @@ final class JobsWorker implements WorkerInterface
                 $task->ack();
             } catch (\Throwable $e) {
                 var_dump(sprintf('Error queue %s', $e->getMessage()));
-                $attempt = (int)$task->getHeaderLine('attempts') - 1;
-                $delay = (int)$task->getHeaderLine('retry-delay');
+                $attempt = (int)$task->getHeaderLine(JobsHandlerInterface::ATTEMPT_HEADER) - 1;
+                $delay = (int)$task->getHeaderLine(JobsHandlerInterface::RETRY_DELAY_HEADER);
 
                 if (!empty($attempt) && $attempt > 0) {
-                    $task->withHeader('attempts', $attempt)->withHeader('retry-delay', $delay)->withDelay($delay)->requeue($e);
+                    $task->withHeader(JobsHandlerInterface::ATTEMPT_HEADER, $attempt)->withDelay($delay)->requeue($e);
                 } else {
                     $task->nack($e, false);
                 }
