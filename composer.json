@@ -15,7 +15,7 @@
     "spiral/roadrunner": "^v2024.1",
     "symfony/dependency-injection": "^5.4",
     "symfony/http-kernel": "^5.4",
-    "symfony/psr-http-message-bridge": "5.*",
+    "symfony/psr-http-message-bridge": "6.4",
     "symfony/runtime": "^5.4",
     "symfony/framework-bundle": "^5.4",
     "spiral/roadrunner-worker": "^v3.5",
