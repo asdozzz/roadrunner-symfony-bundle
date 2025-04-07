@@ -3,11 +3,11 @@
 namespace FluffyDiscord\RoadRunnerBundle\Tests;
 
 use FluffyDiscord\RoadRunnerBundle\Factory\StreamedJsonResponseWrapper;
+use FluffyDiscord\RoadRunnerBundle\Tests\Attributes\SkipForSymfonyVersion;
 use PHPUnit\Framework\Attributes\DataProvider;
-use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\StreamedJsonResponse;
 
-class StreamedJsonResponseTest extends TestCase
+class StreamedJsonResponseTestCase extends BaseTestCase
 {
     public static function responseProvider(): array
     {
@@ -26,6 +26,7 @@ class StreamedJsonResponseTest extends TestCase
         ];
     }
 
+    #[SkipForSymfonyVersion("<", "6.4")]
     #[DataProvider("responseProvider")]
     public function testVanillaResponse(
         StreamedJsonResponse $symfonyResponse,
@@ -36,9 +37,13 @@ class StreamedJsonResponseTest extends TestCase
         $symfonyResponse->sendContent();
         $content = ob_get_clean();
 
-        $this->assertSame($expected, $content);
+        $this->assertSame(
+            hash("xxh128", $expected),
+            hash("xxh128", $content),
+        );
     }
 
+    #[SkipForSymfonyVersion("<", "6.4")]
     #[DataProvider("responseProvider")]
     public function testBundleResponseWrapper(
         StreamedJsonResponse $symfonyResponse,
@@ -47,6 +52,9 @@ class StreamedJsonResponseTest extends TestCase
     {
         $content = implode("", iterator_to_array(StreamedJsonResponseWrapper::wrap($symfonyResponse)));
 
-        $this->assertSame($expected, $content);
+        $this->assertSame(
+            hash("xxh128", $expected),
+            hash("xxh128", $content),
+        );
     }
 }

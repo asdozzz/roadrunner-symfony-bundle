@@ -11,12 +11,14 @@ use FluffyDiscord\RoadRunnerBundle\Event\Centrifugo\RPCEvent;
 use FluffyDiscord\RoadRunnerBundle\Event\Centrifugo\SubRefreshEvent;
 use FluffyDiscord\RoadRunnerBundle\Event\Centrifugo\SubscribeEvent;
 use FluffyDiscord\RoadRunnerBundle\Event\Worker\Centrifugo\AfterRespondEvent;
+use FluffyDiscord\RoadRunnerBundle\Event\Worker\WorkerBootingEvent;
+use FluffyDiscord\RoadRunnerBundle\Event\Worker\WorkerRequestReceivedEvent;
+use FluffyDiscord\RoadRunnerBundle\Event\Worker\WorkerResponseSentEvent;
 use FluffyDiscord\RoadRunnerBundle\Exception\NoCentrifugoResponseProvidedException;
 use FluffyDiscord\RoadRunnerBundle\Exception\UnsupportedCentrifugoRequestTypeException;
-use RoadRunner\Centrifugal\API\DTO\V1\DisconnectResponse;
+use GuzzleHttp\Promise\PromiseInterface; // Sentry v4 compatibility
 use RoadRunner\Centrifugo\CentrifugoWorker as RoadRunnerCentrifugoWorker;
 use RoadRunner\Centrifugo\Payload\ConnectResponse;
-use RoadRunner\Centrifugo\Payload\Disconnect;
 use RoadRunner\Centrifugo\Payload\PublishResponse;
 use RoadRunner\Centrifugo\Payload\RefreshResponse;
 use RoadRunner\Centrifugo\Payload\RPCResponse;
@@ -27,14 +29,14 @@ use Sentry\State\HubInterface as SentryHubInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpKernel\KernelInterface;
 
-readonly class CentrifugoWorker implements WorkerInterface
+class CentrifugoWorker implements WorkerInterface
 {
     public function __construct(
-        private bool                       $lazyBoot,
-        private KernelInterface            $kernel,
-        private RoadRunnerCentrifugoWorker $worker,
-        private EventDispatcherInterface   $eventDispatcher,
-        private ?SentryHubInterface        $sentryHubInterface = null,
+        private readonly bool                       $lazyBoot,
+        private readonly KernelInterface            $kernel,
+        private readonly RoadRunnerCentrifugoWorker $worker,
+        private readonly EventDispatcherInterface   $eventDispatcher,
+        private readonly ?SentryHubInterface        $sentryHubInterface = null,
     )
     {
     }
@@ -45,11 +47,14 @@ readonly class CentrifugoWorker implements WorkerInterface
             $this->kernel->boot();
         }
 
+        $this->eventDispatcher->dispatch(new WorkerBootingEvent());
+
         while ($request = $this->worker->waitRequest()) {
             $this->sentryHubInterface?->pushScope();
 
             try {
-                // allow kernel to reset services
+                $this->eventDispatcher->dispatch(new WorkerRequestReceivedEvent());
+
                 $this->kernel->boot();
 
                 $event = match (true) {
@@ -81,12 +86,18 @@ readonly class CentrifugoWorker implements WorkerInterface
                 }
 
                 $this->eventDispatcher->dispatch(new AfterRespondEvent());
+                $this->eventDispatcher->dispatch(new WorkerResponseSentEvent());
 
             } catch (\Throwable $throwable) {
                 $this->sentryHubInterface?->captureException($throwable);
                 $request->error(500, (string)$throwable);
             } finally {
-                $this->sentryHubInterface?->getClient()?->flush()->wait(false);
+                $result = $this->sentryHubInterface?->getClient()?->flush();
+
+                // sentry v4 compatibility
+                if($result instanceof PromiseInterface) {
+                    $result->wait(false);
+                }
                 $this->sentryHubInterface?->popScope();
             }
         }

@@ -4,21 +4,20 @@ namespace FluffyDiscord\RoadRunnerBundle\Tests;
 
 use FluffyDiscord\RoadRunnerBundle\Factory\BinaryFileResponseWrapper;
 use PHPUnit\Framework\Attributes\DataProvider;
-use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Request;
 
-class BinaryFileResponseTest extends TestCase
+class BinaryFileResponseTestCase extends BaseTestCase
 {
     public static function responseProvider(): array
     {
-        $file = __DIR__ . "/dummy/civic_renewal_forms.zip";
-
-        $symfonyResponse = new BinaryFileResponse($file);
+        $fileWithContent = __DIR__ . "/dummy/civic_renewal_forms.zip";
+        $emptyFile = __DIR__ . "/dummy/empty.txt";
 
         return [
-            "Whole and with range starting from zero"       => [$symfonyResponse, file_get_contents($file), 0, 6023],
-            "Whole and with range starting from 4525 bytes" => [$symfonyResponse, file_get_contents($file), 4525, 14509],
+            "Whole and with range starting from zero"       => [new BinaryFileResponse($fileWithContent), file_get_contents($fileWithContent), 0, 6023],
+            "Whole and with range starting from 4525 bytes" => [new BinaryFileResponse($fileWithContent), file_get_contents($fileWithContent), 4525, 14509],
+            "Empty file"                                    => [new BinaryFileResponse($emptyFile), file_get_contents($emptyFile), 0],
         ];
     }
 
@@ -32,7 +31,10 @@ class BinaryFileResponseTest extends TestCase
         $symfonyResponse->sendContent();
         $content = ob_get_clean();
 
-        $this->assertSame($expected, $content);
+        $this->assertSame(
+            hash("xxh128", $expected),
+            hash("xxh128", $content),
+        );
     }
 
     #[DataProvider("responseProvider")]
@@ -52,7 +54,10 @@ class BinaryFileResponseTest extends TestCase
         $symfonyResponse->sendContent();
         $content = ob_get_clean();
 
-        $this->assertSame(substr($expected, $rangeStart, $rangeEnd - ($rangeStart - 1)), $content);
+        $this->assertSame(
+            hash("xxh128", substr($expected, $rangeStart, $rangeEnd - ($rangeStart - 1))),
+            hash("xxh128", $content),
+        );
     }
 
     #[DataProvider("responseProvider")]
@@ -63,7 +68,10 @@ class BinaryFileResponseTest extends TestCase
     {
         $content = implode("", iterator_to_array(BinaryFileResponseWrapper::wrap($symfonyResponse, Request::createFromGlobals())));
 
-        $this->assertSame($expected, $content);
+        $this->assertSame(
+            hash("xxh128", $expected),
+            hash("xxh128", $content),
+        );
     }
 
     #[DataProvider("responseProvider")]
@@ -79,8 +87,11 @@ class BinaryFileResponseTest extends TestCase
 
         $symfonyResponse->prepare($request);
 
-        $content = implode("", iterator_to_array(BinaryFileResponseWrapper::wrap($symfonyResponse, Request::createFromGlobals())));
+        $content = implode("", iterator_to_array(BinaryFileResponseWrapper::wrap($symfonyResponse, $request)));
 
-        $this->assertSame(substr($expected, $rangeStart, $rangeEnd - ($rangeStart - 1)), $content);
+        $this->assertSame(
+            hash("xxh128", substr($expected, $rangeStart, $rangeEnd - ($rangeStart - 1))),
+            hash("xxh128", $content),
+        );
     }
 }
