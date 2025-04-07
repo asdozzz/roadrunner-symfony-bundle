@@ -1,0 +1,8 @@
+services:
+  php:
+    build:
+      context: ./
+    working_dir: /app
+    tty: true
+    volumes:
+      - ./:/app
